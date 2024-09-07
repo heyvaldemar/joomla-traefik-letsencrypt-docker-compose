@@ -15,7 +15,7 @@
 JOOMLA_CONTAINER=$(docker ps -aqf "name=joomla-joomla")
 JOOMLA_BACKUPS_CONTAINER=$(docker ps -aqf "name=joomla-backups")
 BACKUP_PATH="/srv/joomla-application-data/backups/"
-RESTORE_PATH="/bitnami/joomla/"
+RESTORE_PATH="/var/www/html/"
 BACKUP_PREFIX="joomla-application-data"
 
 echo "--> All available application data backups:"

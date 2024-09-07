@@ -14,11 +14,11 @@
 
 # Backups
 # The `backups` container in the configuration is responsible for the following:
-# 1. **Database Backup**: Creates compressed backups of the MariaDB database using pg_dump.
-# Customizable backup path, filename pattern, and schedule through variables like `MARIADB_BACKUPS_PATH`, `MARIADB_BACKUP_NAME`, and `BACKUP_INTERVAL`.
+# 1. **Database Backup**: Creates compressed backups of the PostgreSQL database using pg_dump.
+# Customizable backup path, filename pattern, and schedule through variables like `POSTGRES_BACKUPS_PATH`, `POSTGRES_BACKUP_NAME`, and `BACKUP_INTERVAL`.
 # 2. **Application Data Backup**: Compresses and stores backups of the application data on the same schedule. Controlled via variables such as `DATA_BACKUPS_PATH`, `DATA_BACKUP_NAME`, and `BACKUP_INTERVAL`.
 # 3. **Backup Pruning**: Periodically removes backups exceeding a specified age to manage storage.
-# Customizable pruning schedule and age threshold with `MARIADB_BACKUP_PRUNE_DAYS` and `DATA_BACKUP_PRUNE_DAYS`.
+# Customizable pruning schedule and age threshold with `POSTGRES_BACKUP_PRUNE_DAYS` and `DATA_BACKUP_PRUNE_DAYS`.
 # By utilizing this container, consistent and automated backups of the essential components of your instance are ensured.
 # Moreover, efficient management of backup storage and tailored backup routines can be achieved through easy and flexible configuration using environment variables.
 
@@ -55,7 +55,7 @@
 # Follow me on Twitter: https://twitter.com/heyValdemar
 # Follow me on Instagram: https://www.instagram.com/heyvaldemar/
 # Follow me on Threads: https://www.threads.net/@heyvaldemar
-# Follow me on Mastodon: https://mastodon.social/@heyValdemar
+# Follow me on Mastodon: https://mastodon.social/@heyvaldemar
 # Follow me on Bluesky: https://bsky.app/profile/heyvaldemar.bsky.social
 # Follow me on Facebook: https://www.facebook.com/heyValdemarFB/
 # Follow me on TikTok: https://www.tiktok.com/@heyvaldemar
@@ -80,27 +80,26 @@ networks:
     external: true
 
 volumes:
-  mariadb-data:
   joomla-data:
-  joomla-mariadb-backup:
+  joomla-postgres:
+  joomla-postgres-backup:
   joomla-data-backups:
   joomla-database-backups:
   traefik-certificates:
 
 services:
-  mariadb:
-    image: ${JOOMLA_MARIADB_IMAGE_TAG}
+  postgres:
+    image: ${JOOMLA_POSTGRES_IMAGE_TAG}
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - joomla-postgres:/var/lib/postgresql/data
     environment:
-      MARIADB_DATABASE: ${JOOMLA_DB_NAME}
-      MARIADB_USER: ${JOOMLA_DB_USER}
-      MARIADB_PASSWORD: ${JOOMLA_DB_PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${JOOMLA_DB_ADMIN_PASSWORD}
+      POSTGRES_DB: ${JOOMLA_DB_NAME}
+      POSTGRES_USER: ${JOOMLA_DB_USER}
+      POSTGRES_PASSWORD: ${JOOMLA_DB_PASSWORD}
     networks:
       - joomla-network
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: [ "CMD", "pg_isready", "-q", "-d", "${JOOMLA_DB_NAME}", "-U", "${JOOMLA_DB_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -112,27 +111,21 @@ services:
     volumes:
       - joomla-data:${DATA_PATH}
     environment:
-      JOOMLA_DATABASE_HOST: mariadb
-      JOOMLA_DATABASE_PORT_NUMBER: 3306
-      JOOMLA_DATABASE_NAME: ${JOOMLA_DB_NAME}
-      JOOMLA_DATABASE_USER: ${JOOMLA_DB_USER}
-      JOOMLA_DATABASE_PASSWORD: ${JOOMLA_DB_PASSWORD}
-      JOOMLA_SITE_NAME: ${JOOMLA_BLOG_NAME}
-      JOOMLA_USERNAME: ${JOOMLA_ADMIN_USERNAME}
-      JOOMLA_PASSWORD: ${JOOMLA_ADMIN_PASSWORD}
-      JOOMLA_EMAIL: ${JOOMLA_ADMIN_EMAIL}
-      JOOMLA_SMTP_HOST: ${JOOMLA_SMTP_ADDRESS}
-      JOOMLA_SMTP_PORT: ${JOOMLA_SMTP_PORT}
-      JOOMLA_SMTP_USER: ${JOOMLA_SMTP_USER_NAME}
-      JOOMLA_SMTP_PASSWORD: ${JOOMLA_SMTP_PASSWORD}
-      JOOMLA_SMTP_PROTOCOL: ${JOOMLA_SMTP_PROTOCOL}
-      JOOMLA_SMTP_SENDER_EMAIL: ${JOOMLA_SMTP_SENDER_EMAIL}
-      JOOMLA_SMTP_SENDER_NAME: ${JOOMLA_SMTP_SENDER_NAME}
+      JOOMLA_DB_TYPE: pgsql
+      JOOMLA_DB_HOST: postgres
+      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME}
+      JOOMLA_DB_USER: ${JOOMLA_DB_USER}
+      JOOMLA_DB_PASSWORD: ${JOOMLA_DB_PASSWORD}
+      JOOMLA_SITE_NAME: ${JOOMLA_SITE_NAME}
+      JOOMLA_ADMIN_USER: ${JOOMLA_ADMIN_USER}
+      JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME}
+      JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD}
+      JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL}
     networks:
       - joomla-network
       - traefik-network
     healthcheck:
-      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/80' || exit 1
       interval: 10s
       timeout: 5s
       retries: 3
@@ -142,7 +135,7 @@ services:
       - "traefik.http.routers.joomla.rule=Host(`${JOOMLA_HOSTNAME}`)"
       - "traefik.http.routers.joomla.service=joomla"
       - "traefik.http.routers.joomla.entrypoints=websecure"
-      - "traefik.http.services.joomla.loadbalancer.server.port=8080"
+      - "traefik.http.services.joomla.loadbalancer.server.port=80"
       - "traefik.http.routers.joomla.tls=true"
       - "traefik.http.routers.joomla.tls.certresolver=letsencrypt"
       - "traefik.http.services.joomla.loadbalancer.passhostheader=true"
@@ -151,7 +144,7 @@ services:
       - "traefik.docker.network=traefik-network"
     restart: unless-stopped
     depends_on:
-      mariadb:
+      postgres:
         condition: service_healthy
       traefik:
         condition: service_healthy
@@ -210,36 +203,36 @@ services:
     restart: unless-stopped
 
   backups:
-    image: ${JOOMLA_MARIADB_IMAGE_TAG}
+    image: ${JOOMLA_POSTGRES_IMAGE_TAG}
     command: >-
       sh -c 'sleep $BACKUP_INIT_SLEEP &&
       while true; do
-        mariadb-dump -h mariadb -u $JOOMLA_DB_USER -p"$JOOMLA_DB_PASSWORD" $JOOMLA_DB_NAME | gzip > "$MARIADB_BACKUPS_PATH/$MARIADB_BACKUP_NAME-$(date '+%Y-%m-%d_%H-%M').gz" &&
+        pg_dump -h postgres -p 5432 -d $JOOMLA_DB_NAME -U $JOOMLA_DB_USER | gzip > $POSTGRES_BACKUPS_PATH/$POSTGRES_BACKUP_NAME-$(date "+%Y-%m-%d_%H-%M").gz &&
         tar -zcpf $DATA_BACKUPS_PATH/$DATA_BACKUP_NAME-$(date "+%Y-%m-%d_%H-%M").tar.gz $DATA_PATH &&
-        find $MARIADB_BACKUPS_PATH -type f -mtime +$MARIADB_BACKUP_PRUNE_DAYS | xargs rm -f &&
+        find $POSTGRES_BACKUPS_PATH -type f -mtime +$POSTGRES_BACKUP_PRUNE_DAYS | xargs rm -f &&
         find $DATA_BACKUPS_PATH -type f -mtime +$DATA_BACKUP_PRUNE_DAYS | xargs rm -f;
         sleep $BACKUP_INTERVAL; done'
     volumes:
-      - joomla-mariadb-backup:/var/lib/mysql
+      - joomla-postgres-backup:/var/lib/postgresql/data
       - joomla-data:${DATA_PATH}
       - joomla-data-backups:${DATA_BACKUPS_PATH}
-      - joomla-database-backups:${MARIADB_BACKUPS_PATH}
+      - joomla-database-backups:${POSTGRES_BACKUPS_PATH}
     environment:
       JOOMLA_DB_NAME: ${JOOMLA_DB_NAME}
       JOOMLA_DB_USER: ${JOOMLA_DB_USER}
-      JOOMLA_DB_PASSWORD: ${JOOMLA_DB_PASSWORD}
+      PGPASSWORD: ${JOOMLA_DB_PASSWORD}
       BACKUP_INIT_SLEEP: ${BACKUP_INIT_SLEEP}
       BACKUP_INTERVAL: ${BACKUP_INTERVAL}
-      MARIADB_BACKUP_PRUNE_DAYS: ${MARIADB_BACKUP_PRUNE_DAYS}
+      POSTGRES_BACKUP_PRUNE_DAYS: ${POSTGRES_BACKUP_PRUNE_DAYS}
       DATA_BACKUP_PRUNE_DAYS: ${DATA_BACKUP_PRUNE_DAYS}
-      MARIADB_BACKUPS_PATH: ${MARIADB_BACKUPS_PATH}
+      POSTGRES_BACKUPS_PATH: ${POSTGRES_BACKUPS_PATH}
       DATA_BACKUPS_PATH: ${DATA_BACKUPS_PATH}
       DATA_PATH: ${DATA_PATH}
-      MARIADB_BACKUP_NAME: ${MARIADB_BACKUP_NAME}
+      POSTGRES_BACKUP_NAME: ${POSTGRES_BACKUP_NAME}
       DATA_BACKUP_NAME: ${DATA_BACKUP_NAME}
     networks:
       - joomla-network
     restart: unless-stopped
     depends_on:
-      mariadb:
+      postgres:
         condition: service_healthy

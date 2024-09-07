@@ -15,9 +15,9 @@
 JOOMLA_CONTAINER=$(docker ps -aqf "name=joomla-joomla")
 JOOMLA_BACKUPS_CONTAINER=$(docker ps -aqf "name=joomla-backups")
 JOOMLA_DB_NAME="joomladb"
-JOOMLA_DB_USER=$(docker exec $JOOMLA_BACKUPS_CONTAINER printenv JOOMLA_DB_USER)
-MARIADB_PASSWORD=$(docker exec $JOOMLA_BACKUPS_CONTAINER printenv JOOMLA_DB_PASSWORD)
-BACKUP_PATH="/srv/joomla-mariadb/backups/"
+JOOMLA_DB_USER="joomladbuser"
+POSTGRES_PASSWORD=$(docker exec $JOOMLA_BACKUPS_CONTAINER printenv PGPASSWORD)
+BACKUP_PATH="/srv/joomla-postgres/backups/"
 
 echo "--> All available database backups:"
 
@@ -26,8 +26,8 @@ do
   echo "$entry"
 done
 
-echo "--> Copy and paste the backup name from the list above to restore database and press [ENTER]"
-echo "--> Example: joomla-mariadb-backup-YYYY-MM-DD_hh-mm.gz"
+echo "--> Copy and paste the backup name from the list above to restore database and press [ENTER]
+--> Example: joomla-postgres-backup-YYYY-MM-DD_hh-mm.gz"
 echo -n "--> "
 
 read SELECTED_DATABASE_BACKUP
@@ -38,8 +38,9 @@ echo "--> Stopping service..."
 docker stop "$JOOMLA_CONTAINER"
 
 echo "--> Restoring database..."
-docker exec "$JOOMLA_BACKUPS_CONTAINER" sh -c "mariadb -h mariadb -u $JOOMLA_DB_USER --password=$MARIADB_PASSWORD -e 'DROP DATABASE $JOOMLA_DB_NAME; CREATE DATABASE $JOOMLA_DB_NAME;' \
-&& gunzip -c ${BACKUP_PATH}${SELECTED_DATABASE_BACKUP} | mariadb -h mariadb -u $JOOMLA_DB_USER --password=$MARIADB_PASSWORD $JOOMLA_DB_NAME"
+docker exec "$JOOMLA_BACKUPS_CONTAINER" sh -c "dropdb -h postgres -p 5432 $JOOMLA_DB_NAME -U $JOOMLA_DB_USER \
+&& createdb -h postgres -p 5432 $JOOMLA_DB_NAME -U $JOOMLA_DB_USER \
+&& gunzip -c ${BACKUP_PATH}${SELECTED_DATABASE_BACKUP} | psql -h postgres -p 5432 $JOOMLA_DB_NAME -U $JOOMLA_DB_USER"
 echo "--> Database recovery completed..."
 
 echo "--> Starting service..."
