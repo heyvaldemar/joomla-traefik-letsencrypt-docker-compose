@@ -1,3 +1,15 @@
+# Image pins live HERE, as interpolation defaults, so `git pull` (or
+# re-downloading this file) delivers the exact version combination this
+# repository has tested — no .env editing required. Setting the matching
+# variable in .env overrides the default for anyone who wants to pin
+# differently; .env itself carries only secrets and deliberate overrides.
+# CI (Trivy scans, check-pin-freshness, the ephemeral test .env) reads
+# the pins from these lines — this block is the single source of truth.
+x-images:
+  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:3.7@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf}
+  postgres: &postgres-image ${JOOMLA_POSTGRES_IMAGE_TAG:-postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94}
+  joomla: &joomla-image ${JOOMLA_IMAGE_TAG:-joomla:6.1.3@sha256:bbf24ad7d21d6bc96699c463c6ec6bf7a415d84f097026024e79758a18fdac5f}
+
 networks:
   joomla-network:
     external: true
@@ -14,17 +26,17 @@ volumes:
 
 services:
   postgres:
-    image: ${JOOMLA_POSTGRES_IMAGE_TAG}
+    image: *postgres-image
     volumes:
       - joomla-postgres:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${JOOMLA_DB_NAME}
-      POSTGRES_USER: ${JOOMLA_DB_USER}
-      POSTGRES_PASSWORD: ${JOOMLA_DB_PASSWORD}
+      POSTGRES_DB: ${JOOMLA_DB_NAME:-joomladb}
+      POSTGRES_USER: ${JOOMLA_DB_USER:-joomladbbuser}
+      POSTGRES_PASSWORD: ${JOOMLA_DB_PASSWORD:?set in .env - see .env.example for generation command}
     networks:
       - joomla-network
     healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "${JOOMLA_DB_NAME}", "-U", "${JOOMLA_DB_USER}" ]
+      test: [ "CMD", "pg_isready", "-q", "-d", "${JOOMLA_DB_NAME:-joomladb}", "-U", "${JOOMLA_DB_USER:-joomladbbuser}" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -32,20 +44,20 @@ services:
     restart: unless-stopped
 
   joomla:
-    image: ${JOOMLA_IMAGE_TAG}
+    image: *joomla-image
     volumes:
-      - joomla-data:${DATA_PATH}
+      - joomla-data:${DATA_PATH:-/var/www/html}
     environment:
       JOOMLA_DB_TYPE: pgsql
       JOOMLA_DB_HOST: postgres
-      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME}
-      JOOMLA_DB_USER: ${JOOMLA_DB_USER}
+      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME:-joomladb}
+      JOOMLA_DB_USER: ${JOOMLA_DB_USER:-joomladbbuser}
       JOOMLA_DB_PASSWORD: ${JOOMLA_DB_PASSWORD}
-      JOOMLA_SITE_NAME: ${JOOMLA_SITE_NAME}
-      JOOMLA_ADMIN_USER: ${JOOMLA_ADMIN_USER}
-      JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME}
-      JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD}
-      JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL}
+      JOOMLA_SITE_NAME: ${JOOMLA_SITE_NAME:-Joomla}
+      JOOMLA_ADMIN_USER: ${JOOMLA_ADMIN_USER:-Joomla Admin}
+      JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME:-joomlaadmin}
+      JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD:?set in .env - see .env.example for generation command}
+      JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL:?set in .env - see .env.example}
     networks:
       - joomla-network
       - traefik-network
@@ -59,7 +71,7 @@ services:
       # Enable Traefik for this container
       - "traefik.enable=true"
       # Match incoming requests on a specific hostname
-      - "traefik.http.routers.joomla.rule=Host(`${JOOMLA_HOSTNAME}`)"
+      - "traefik.http.routers.joomla.rule=Host(`${JOOMLA_HOSTNAME:?set in .env - see .env.example}`)"
       # Assign the router to a named Traefik service
       - "traefik.http.routers.joomla.service=joomla"
       # Use the 'websecure' (HTTPS) entry point
@@ -86,10 +98,10 @@ services:
         condition: service_healthy
 
   traefik:
-    image: ${TRAEFIK_IMAGE_TAG}
+    image: *traefik-image
     command:
       # Set the log level (DEBUG, INFO, WARN, ERROR)
-      - "--log.level=${TRAEFIK_LOG_LEVEL}"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-WARN}"
       # Enable the built-in API and web-based dashboard
       - "--api.dashboard=true"
       # Enable the /ping endpoint so we can health-check Traefik
@@ -114,7 +126,7 @@ services:
       # Use ACME (Let's Encrypt) to generate/renew certificates via TLS challenge
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       # The email address used by Let's Encrypt for renewal notices
-      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL:?set in .env - see .env.example}"
       # The file where ACME certificates are stored inside the container
       - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
       # Enable Prometheus metrics
@@ -143,14 +155,14 @@ services:
       # Enable Traefik for this container
       - "traefik.enable=true"
       # A router to expose the Traefik dashboard
-      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME:?set in .env - see .env.example}`)"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       # Basic Authentication for the Traefik dashboard
       - "traefik.http.routers.dashboard.middlewares=authtraefik"
-      - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+      - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH:?set in .env - see .env.example for htpasswd generation}"
       # Specify the internal server port to the dashboard service
       - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
       # Pass the original Host header to the backend
@@ -158,33 +170,33 @@ services:
     restart: unless-stopped
 
   backups:
-    image: ${JOOMLA_POSTGRES_IMAGE_TAG}
+    image: *postgres-image
     command: >-
-      sh -c 'sleep $BACKUP_INIT_SLEEP &&
+      sh -c 'sleep $$BACKUP_INIT_SLEEP &&
       while true; do
-        pg_dump -h postgres -p 5432 -d $JOOMLA_DB_NAME -U $JOOMLA_DB_USER | gzip > $POSTGRES_BACKUPS_PATH/$POSTGRES_BACKUP_NAME-$(date "+%Y-%m-%d_%H-%M").gz &&
-        tar -zcpf $DATA_BACKUPS_PATH/$DATA_BACKUP_NAME-$(date "+%Y-%m-%d_%H-%M").tar.gz $DATA_PATH &&
-        find $POSTGRES_BACKUPS_PATH -type f -mtime +$POSTGRES_BACKUP_PRUNE_DAYS | xargs rm -f &&
-        find $DATA_BACKUPS_PATH -type f -mtime +$DATA_BACKUP_PRUNE_DAYS | xargs rm -f;
-        sleep $BACKUP_INTERVAL; done'
+        pg_dump -h postgres -p 5432 -d $$JOOMLA_DB_NAME -U $$JOOMLA_DB_USER | gzip > $$POSTGRES_BACKUPS_PATH/$$POSTGRES_BACKUP_NAME-$$(date "+%Y-%m-%d_%H-%M").gz &&
+        tar -zcpf $$DATA_BACKUPS_PATH/$$DATA_BACKUP_NAME-$$(date "+%Y-%m-%d_%H-%M").tar.gz $$DATA_PATH &&
+        find $$POSTGRES_BACKUPS_PATH -type f -mtime +$$POSTGRES_BACKUP_PRUNE_DAYS | xargs rm -f &&
+        find $$DATA_BACKUPS_PATH -type f -mtime +$$DATA_BACKUP_PRUNE_DAYS | xargs rm -f;
+        sleep $$BACKUP_INTERVAL; done'
     volumes:
       - joomla-postgres-backup:/var/lib/postgresql/data
-      - joomla-data:${DATA_PATH}
-      - joomla-data-backups:${DATA_BACKUPS_PATH}
-      - joomla-database-backups:${POSTGRES_BACKUPS_PATH}
+      - joomla-data:${DATA_PATH:-/var/www/html}
+      - joomla-data-backups:${DATA_BACKUPS_PATH:-/srv/joomla-application-data/backups}
+      - joomla-database-backups:${POSTGRES_BACKUPS_PATH:-/srv/joomla-postgres/backups}
     environment:
-      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME}
-      JOOMLA_DB_USER: ${JOOMLA_DB_USER}
+      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME:-joomladb}
+      JOOMLA_DB_USER: ${JOOMLA_DB_USER:-joomladbbuser}
       PGPASSWORD: ${JOOMLA_DB_PASSWORD}
-      BACKUP_INIT_SLEEP: ${BACKUP_INIT_SLEEP}
-      BACKUP_INTERVAL: ${BACKUP_INTERVAL}
-      POSTGRES_BACKUP_PRUNE_DAYS: ${POSTGRES_BACKUP_PRUNE_DAYS}
-      DATA_BACKUP_PRUNE_DAYS: ${DATA_BACKUP_PRUNE_DAYS}
-      POSTGRES_BACKUPS_PATH: ${POSTGRES_BACKUPS_PATH}
-      DATA_BACKUPS_PATH: ${DATA_BACKUPS_PATH}
-      DATA_PATH: ${DATA_PATH}
-      POSTGRES_BACKUP_NAME: ${POSTGRES_BACKUP_NAME}
-      DATA_BACKUP_NAME: ${DATA_BACKUP_NAME}
+      BACKUP_INIT_SLEEP: ${BACKUP_INIT_SLEEP:-30m}
+      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-24h}
+      POSTGRES_BACKUP_PRUNE_DAYS: ${POSTGRES_BACKUP_PRUNE_DAYS:-7}
+      DATA_BACKUP_PRUNE_DAYS: ${DATA_BACKUP_PRUNE_DAYS:-7}
+      POSTGRES_BACKUPS_PATH: ${POSTGRES_BACKUPS_PATH:-/srv/joomla-postgres/backups}
+      DATA_BACKUPS_PATH: ${DATA_BACKUPS_PATH:-/srv/joomla-application-data/backups}
+      DATA_PATH: ${DATA_PATH:-/var/www/html}
+      POSTGRES_BACKUP_NAME: ${POSTGRES_BACKUP_NAME:-joomla-postgres-backup}
+      DATA_BACKUP_NAME: ${DATA_BACKUP_NAME:-joomla-application-data-backup}
     networks:
       - joomla-network
     restart: unless-stopped
