@@ -50,7 +50,7 @@ docker compose -p joomla logs traefik | grep -i "adding certificate"
 
 Three images — [`traefik`](https://hub.docker.com/_/traefik), [`joomla`](https://hub.docker.com/_/joomla), [`postgres`](https://hub.docker.com/_/postgres), all Docker Hub official — pinned to `tag@sha256:<digest>` as interpolation defaults in the compose `x-images` block. Earlier revisions deployed from the floating `joomla` tag, which meant every fresh deploy could get a different major version; the pin ends that. An `*_IMAGE_TAG` variable in `.env` overrides deliberately.
 
-The weekly `check-pin-freshness` CI job re-resolves each pin against its registry and compares the pinned Joomla and Traefik versions against the latest upstream releases. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
+The daily `check-pin-freshness` CI job re-resolves each pin against its registry and compares the pinned Joomla and Traefik versions against the latest upstream releases. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
 ## Production checklist
 
@@ -70,7 +70,7 @@ Every service carries memory and CPU limits plus reservations as compose-level d
 
 ## Testing
 
-The [Deployment Verification](https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every Monday at 06:00 UTC: shellcheck + actionlint, Trivy scans of all three pinned images, the weekly freshness check, and a deploy-and-test job that boots the stack with ephemeral credentials, lets the unattended installer run, and requires the site to answer through Traefik.
+The [Deployment Verification](https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every day at 06:00 UTC: shellcheck + actionlint, Trivy scans of all three pinned images, the weekly freshness check, and a deploy-and-test job that boots the stack with ephemeral credentials, lets the unattended installer run, and requires the site to answer through Traefik.
 
 ### Backup and restore, proven
 
