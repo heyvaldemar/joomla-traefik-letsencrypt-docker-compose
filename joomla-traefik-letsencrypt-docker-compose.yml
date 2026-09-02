@@ -27,6 +27,16 @@ volumes:
 services:
   postgres:
     image: *postgres-image
+    # Resource limits as .env-overridable defaults (e.g. JOOMLA_POSTGRES_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${JOOMLA_POSTGRES_MEMORY_LIMIT:-1g}
+          cpus: "${JOOMLA_POSTGRES_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${JOOMLA_POSTGRES_MEMORY_RESERVATION:-128m}
+          cpus: "${JOOMLA_POSTGRES_CPU_RESERVATION:-0.25}"
     volumes:
       - joomla-postgres:/var/lib/postgresql/data
     environment:
@@ -45,6 +55,16 @@ services:
 
   joomla:
     image: *joomla-image
+    # Resource limits as .env-overridable defaults (e.g. JOOMLA_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${JOOMLA_MEMORY_LIMIT:-512m}
+          cpus: "${JOOMLA_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${JOOMLA_MEMORY_RESERVATION:-64m}
+          cpus: "${JOOMLA_CPU_RESERVATION:-0.25}"
     volumes:
       - joomla-data:${DATA_PATH:-/var/www/html}
     environment:
@@ -99,6 +119,16 @@ services:
 
   traefik:
     image: *traefik-image
+    # Resource limits as .env-overridable defaults (e.g. TRAEFIK_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${TRAEFIK_MEMORY_LIMIT:-256m}
+          cpus: "${TRAEFIK_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${TRAEFIK_MEMORY_RESERVATION:-64m}
+          cpus: "${TRAEFIK_CPU_RESERVATION:-0.1}"
     command:
       # Set the log level (DEBUG, INFO, WARN, ERROR)
       - "--log.level=${TRAEFIK_LOG_LEVEL:-WARN}"
@@ -171,6 +201,16 @@ services:
 
   backups:
     image: *postgres-image
+    # Resource limits as .env-overridable defaults (e.g. JOOMLA_BACKUPS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${JOOMLA_BACKUPS_MEMORY_LIMIT:-256m}
+          cpus: "${JOOMLA_BACKUPS_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${JOOMLA_BACKUPS_MEMORY_RESERVATION:-32m}
+          cpus: "${JOOMLA_BACKUPS_CPU_RESERVATION:-0.1}"
     command: >-
       bash -c 'set -o pipefail;
       sleep "$$BACKUP_INIT_SLEEP";
