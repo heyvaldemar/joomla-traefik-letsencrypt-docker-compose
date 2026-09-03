@@ -3,7 +3,7 @@
 [![Deployment Verification](https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository deploys **Joomla** behind **Traefik** with automatic **Let's Encrypt TLS**, backed by **PostgreSQL 16**, with an unattended first-start installation (site and admin account from `.env`), scheduled **backups** (database + site files) and companion **restore scripts**.
+This repository deploys Joomla behind Traefik with automatic Let's Encrypt TLS, backed by PostgreSQL 16, with an unattended first-start installation (site and admin account from `.env`), scheduled backups (database + site files) and companion restore scripts.
 
 📙 Full narrative installation guide on the blog: [heyvaldemar.com/install-joomla-using-docker-compose/](https://www.heyvaldemar.com/install-joomla-using-docker-compose/).
 
@@ -89,7 +89,7 @@ chmod +x tests/e2e-backup-restore.sh
 
 It stops the database container briefly to prove failure detection. Run it on a staging copy, not on production.
 
-## Security Notes
+## Security notes
 
 - Credentials are read from `.env` at deploy time; `.env` is gitignored and compose fails fast on missing required variables.
 - **Pre-rotation advisory.** Releases before v1.0.0 (2026-09-01) shipped a tracked `.env` with generated-looking database and admin passwords. Rotate them if your deployment reused them.
