@@ -51,7 +51,7 @@ _(no unreleased changes yet)_
 
 ### Added
 
-- **`tests/e2e-backup-restore.sh`** — seven end-to-end scenarios against
+- **`tests/e2e-backup-restore.sh`**: seven end-to-end scenarios against
   the live stack, run by CI on every push and by you locally: the
   required-variable guard fires, a backup is produced, it is a readable
   archive with real dump content (and a readable data `tar.gz` where the
@@ -87,19 +87,19 @@ v1.2.0.
 
 ### Changed
 
-- **Joomla was deployed from the floating `joomla` (latest) tag — now
+- **Joomla was deployed from the floating `joomla` (latest) tag, now
   pinned to 6.1.3** by `tag@sha256:digest`, alongside PostgreSQL 16 and
   Traefik 3.7 (3.2's Docker client cannot talk to Docker Engine 29), all
   as `x-images` interpolation defaults. `git pull` delivers the tested
   combination; `.env` carries only secrets and deliberate overrides.
   ❗ If your deployment installed as Joomla 4/5 from the floating tag,
-  update through the Joomla admin UI first and only then adopt the pin —
+  update through the Joomla admin UI first and only then adopt the pin,
   see the release notes.
 
 ### Security
 
 - **Credentials untracked from git.** The tracked `.env` carried
-  generated-looking database and admin passwords — rotate them if
+  generated-looking database and admin passwords. Rotate them if
   reused.
 
 ### Fixed
