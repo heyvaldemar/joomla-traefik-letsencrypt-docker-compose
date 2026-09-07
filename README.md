@@ -46,6 +46,10 @@ docker compose -p joomla logs traefik | grep -i "adding certificate"
 - **`docker compose up` fails with `set in .env`.** A required variable is empty; the error names it.
 - **Networks not found.** Step 2 was skipped.
 
+## Updating
+
+`./update.sh` moves this checkout to the latest release tag — a combination this repository's CI has booted, upgraded from the previous release on the same volumes, and smoke-tested — and then runs `docker compose up -d`. It refuses to cross a major version unattended, refuses to run over local changes, and names any variable that became required since your version before anything has moved. `./update.sh --dry-run` says what would happen. Every release cut by fleet triage also carries what upstream changed, read from its release notes against this compose file.
+
 ## Supply chain trust
 
 Three images ([`traefik`](https://hub.docker.com/_/traefik), [`joomla`](https://hub.docker.com/_/joomla), [`postgres`](https://hub.docker.com/_/postgres), all Docker Hub official) pinned to `tag@sha256:<digest>` as interpolation defaults in the compose `x-images` block. Earlier revisions deployed from the floating `joomla` tag, which meant every fresh deploy could get a different major version; the pin ends that. An `*_IMAGE_TAG` variable in `.env` overrides deliberately.
