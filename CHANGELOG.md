@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.9.1] - 2026-09-30
+
 ### Changed
 
 - **`joomla:6.1.3` moved to `joomla:6.1.4`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
@@ -253,7 +257,8 @@ v1.2.0.
   deploy-and-test job that boots the stack, lets the unattended installer
   run, and requires the site to answer through Traefik.
 
-[Unreleased]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.8.8...v1.9.0
 [1.8.6]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.8.4...v1.8.5
