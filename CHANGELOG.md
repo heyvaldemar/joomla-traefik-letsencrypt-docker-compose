@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **`postgres:16` was rebuilt upstream**; the pin moved from `sha256:1a6ab3f5345e…` to `sha256:65b16a8b326e…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+- **`joomla:6.1.4` was rebuilt upstream**; the pin moved from `sha256:28e687c20121…` to `sha256:518a63cdf11e…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+
 ### Fixed
 
 - **`update.sh` no longer stops without a word when a release adds a variable and no compose file requires one.** The search for `${VAR:?}` came back empty, and under `pipefail` that empty result ended the script with status 1 right after it listed the new variables.
