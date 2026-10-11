@@ -8,7 +8,7 @@
 x-images:
   traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:575fa15b135078fe5e50aa847987d96dbddd7b093c172429618404df73f3fa7c}}
   postgres: &postgres-image ${JOOMLA_POSTGRES_IMAGE_TAG:-postgres:${JOOMLA_POSTGRES_IMAGE_VERSION:-16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d}}
-  joomla: &joomla-image ${JOOMLA_IMAGE_TAG:-joomla:${JOOMLA_IMAGE_VERSION:-6.1.4@sha256:96da31fcdfc6d45d82d3c25a1e88a790a5bb8e7efe06cdef46612bdb74b008fa}}
+  joomla: &joomla-image ${JOOMLA_IMAGE_TAG:-joomla:${JOOMLA_IMAGE_VERSION:-6.1.4@sha256:ae220b4caddec280f4e3247bc4f77e9ddc508dfa503273121ad9a8011eaad5c3}}
 
 networks:
   joomla-network:
