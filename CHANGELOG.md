@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **`joomla:6.1.4` moved to `joomla:6.2.0`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
 
 ## [1.9.12] - 2026-10-23
 
