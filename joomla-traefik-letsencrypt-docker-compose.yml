@@ -7,8 +7,8 @@
 # the pins from these lines — this block is the single source of truth.
 x-images:
   traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:1336e85aaed293bd63d005086e0dd013b04078b26aaeb1c18b26a2f928af7e65}}
-  postgres: &postgres-image ${JOOMLA_POSTGRES_IMAGE_TAG:-postgres:${JOOMLA_POSTGRES_IMAGE_VERSION:-16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97}}
-  joomla: &joomla-image ${JOOMLA_IMAGE_TAG:-joomla:${JOOMLA_IMAGE_VERSION:-6.2.0@sha256:3ae5573340b69391dd23497dbb650c557aa3a72de71fd8bd47bd0621484d2321}}
+  postgres: &postgres-image ${JOOMLA_POSTGRES_IMAGE_TAG:-postgres:${JOOMLA_POSTGRES_IMAGE_VERSION:-16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c}}
+  joomla: &joomla-image ${JOOMLA_IMAGE_TAG:-joomla:${JOOMLA_IMAGE_VERSION:-6.2.0@sha256:3d1460c7e652820cab4f6b4b228c0f4453374723349f3d78e54936c4fa3c26b1}}
 
 networks:
   joomla-network:
