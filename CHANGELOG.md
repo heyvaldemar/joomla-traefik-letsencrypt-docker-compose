@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Security
+
+- **`postgres:16` was rebuilt upstream**; the pin moved from `sha256:5db6dac2ef5d…` to `sha256:933463a6c8eb…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+- **`joomla:6.2.0` was rebuilt upstream**; the pin moved from `sha256:73639c53368b…` to `sha256:317c4111354c…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.9.20] - 2026-11-04
 
