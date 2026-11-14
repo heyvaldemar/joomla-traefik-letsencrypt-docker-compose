@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.9.28] - 2026-11-14
+
 ### Security
 
 - **`joomla:6.2.0` was rebuilt upstream**; the pin moved from `sha256:5fb4c9b832aa…` to `sha256:90860f32e987…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -438,7 +442,8 @@ v1.2.0.
   deploy-and-test job that boots the stack, lets the unattended installer
   run, and requires the site to answer through Traefik.
 
-[Unreleased]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.27...HEAD
+[Unreleased]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.28...HEAD
+[1.9.28]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.27...v1.9.28
 [1.9.27]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.26...v1.9.27
 [1.9.26]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.25...v1.9.26
 [1.9.25]: https://github.com/heyvaldemar/joomla-traefik-letsencrypt-docker-compose/compare/v1.9.24...v1.9.25
